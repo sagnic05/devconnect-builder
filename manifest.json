@@ -1,0 +1,16 @@
+{
+  "name": "DevConnect Builder",
+  "short_name": "DevConnect",
+  "description": "A No-Code Portfolio Builder for Developers",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1e1e2f",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
