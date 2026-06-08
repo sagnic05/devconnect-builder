@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevConnect | Pro Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;      /* Indigo */
+            --primary-hover: #4338ca;
+            --sidebar-bg: #1e1e2f;   /* Deep dark blue */
+            --sidebar-text: #e2e8f0;
+            --canvas-bg: #f3f4f6;    /* Light gray */
+            --white: #ffffff;
+            --border: #cbd5e1;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+            background-color: var(--canvas-bg);
+            color: #333;
+        }
+
+        /* --- SIDEBAR STYLING --- */
+        #sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-content {
+            padding: 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .draggable-item {
+            background-color: rgba(255,255,255,0.05);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: grab;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .draggable-item i {
+            color: #818cf8;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .draggable-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            transform: translateY(0);
+        }
+
+        /* --- THEME CONTROLS --- */
+        .theme-control {
+            margin-bottom: 16px;
+        }
+        
+        .theme-control label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .theme-control input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .theme-control select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- CANVAS AREA STYLING --- */
+        #canvas-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        .top-bar {
+            height: 70px;
+            background: var(--white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 5;
+        }
+
+        .top-bar h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1e293b;
+        }
+
+        #export-btn {
+            padding: 10px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+
+        #export-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .canvas-scroll-area {
+            padding: 40px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        #canvas {
+            background-color: var(--white);
+            width: 100%;
+            max-width: 900px;
+            min-height: 800px;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: border-color 0.3s;
+        }
+
+        /* --- DROPPED ELEMENTS STYLING --- */
+        .portfolio-section {
+            border: 1px solid transparent;
+            padding: 24px;
+            margin-bottom: 20px;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .portfolio-section:hover {
+            border-color: #818cf8;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+
+        [contenteditable="true"] {
+            outline: none;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        [contenteditable="true"]:hover {
+            background: #f1f5f9;
+        }
+
+        [contenteditable="true"]:focus {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fa-solid fa-layer-group"></i> DevConnect</h2>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="section-title">Components</div>
+            <div class="draggable-item" draggable="true" data-type="header">
+                <i class="fa-solid fa-heading"></i> Hero Header
+            </div>
+            <div class="draggable-item" draggable="true" data-type="about">
+                <i class="fa-solid fa-user"></i> About Me
+            </div>
+            <div class="draggable-item" draggable="true" data-type="projects">
+                <i class="fa-solid fa-code"></i> Projects Grid
+            </div>
+            <div class="draggable-item" draggable="true" data-type="contact">
+                <i class="fa-solid fa-envelope"></i> Contact Form
+            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.05); margin: 30px 0;">
+            
+            <div class="section-title">Theme Settings</div>
+            <div class="theme-control">
+                <label for="bg-color">Page Background</label>
+                <input type="color" id="bg-color" value="#f8fafc">
+            </div>
+            <div class="theme-control">
+                <label for="font-family">Typography</label>
+                <select id="font-family">
+                    <option value="'Inter', sans-serif">Modern (Inter)</option>
+                    <option value="'Georgia', serif">Elegant (Serif)</option>
+                    <option value="'Fira Code', monospace">Developer (Monospace)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <div class="top-bar">
+            <h2>Portfolio Workspace</h2>
+            <button id="export-btn">
+                <i class="fa-solid fa-download"></i> Export HTML
+            </button>
+        </div>
+        
+        <div class="canvas-scroll-area">
+            <div id="canvas">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const draggables = document.querySelectorAll('.draggable-item');
+        const canvas = document.getElementById('canvas');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('componentType', e.target.getAttribute('data-type'));
+            });
+        });
+
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            canvas.style.borderColor = '#4f46e5'; 
+            canvas.style.backgroundColor = '#f8fafc';
+        });
+
+        canvas.addEventListener('dragleave', () => {
+            canvas.style.borderColor = '#cbd5e1'; 
+            canvas.style.backgroundColor = '#ffffff';
+        });
+
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            canvas.style.borderColor = '#cbd5e1';
+            canvas.style.backgroundColor = '#ffffff';
+            
+            const componentType = e.dataTransfer.getData('componentType');
+            if (!componentType) return;
+
+            const newSection = document.createElement('div');
+            newSection.classList.add('portfolio-section');
+
+            if (componentType === 'header') {
+                newSection.innerHTML = '<h1 contenteditable="true" style="font-size: 2.5rem; margin-bottom: 10px;">Hi, I am a Developer</h1><p contenteditable="true" style="font-size: 1.2rem; color: #64748b;">I build robust and scalable web applications.</p>';
+            } else if (componentType === 'about') {
+                newSection.innerHTML = '<h3 contenteditable="true" style="color: #4f46e5;">About Me</h3><p contenteditable="true" style="color: #475569; line-height: 1.7;">I am a passionate coder with experience in Python and JavaScript. I love turning complex problems into simple, beautiful, and intuitive designs.</p>';
+            } else if (componentType === 'projects') {
+                newSection.innerHTML = '<h3 contenteditable="true" style="color: #4f46e5;">Featured Projects</h3><ul style="color: #475569; line-height: 1.8;"><li contenteditable="true"><strong>E-commerce API:</strong> Built with Flask and PostgreSQL</li><li contenteditable="true"><strong>DevConnect Builder:</strong> A lightweight No-Code UI tool</li></ul>';
+            } else if (componentType === 'contact') {
+                newSection.innerHTML = '<h3 contenteditable="true" style="color: #4f46e5;">Get In Touch</h3><p contenteditable="true" style="color: #475569;">Email me at: <strong>hello@developer.com</strong></p>';
+            }
+
+            canvas.appendChild(newSection);
+        });
+
+        // SERVERLESS EXPORT FUNCTIONALITY 
+        document.getElementById('export-btn').addEventListener('click', () => {
+            const btn = document.getElementById('export-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+
+            const canvasContent = canvas.innerHTML;
+            const bgColor = document.getElementById('bg-color').value;
+            const fontStyle = document.getElementById('font-family').value;
+
+            // Generate the final HTML template directly in JavaScript
+            const finalHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Developer Portfolio</title>
+    <style>
+        body { 
+            font-family: ${fontStyle}; 
+            line-height: 1.6; 
+            margin: 0; 
+            padding: 0; 
+            background-color: ${bgColor}; 
+            color: #333; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 40px; 
+            background: white; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            border-radius: 8px; 
+        }
+        .portfolio-section { 
+            margin-bottom: 30px; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid #eee; 
+        }
+        .portfolio-section:last-child { border-bottom: none; }
+        h1, h3 { color: #2c3e50; }
+        ul { padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        ${canvasContent}
+    </div>
+</body>
+</html>`;
+
+            // Create a Blob to download the file directly to the user's device
+            const blob = new Blob([finalHtml], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            a.href = url;
+            a.download = 'devconnect_portfolio.html';
+            document.body.appendChild(a);
+            a.click();
+            
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            setTimeout(() => { btn.innerHTML = originalText; }, 500);
+        });
+    </script>
+</body>
+</html>
